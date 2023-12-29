@@ -1,10 +1,11 @@
 import { deleteStudent, getStudent, getStudents } from 'apis/students.api'
-import { Fragment } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useQueryString } from 'utils/utils'
 import classNames from 'classnames'
 import { toast } from 'react-toastify'
+import { Students as StudentsType } from 'types/students.type'
 
 const LIMIT = 10
 export default function Students() {
@@ -27,22 +28,24 @@ export default function Students() {
   //* Current page
   const page = Number(queryString.page) || 1
 
+  // const [pagess, setPagess] = useState(1)
   const studentsQuery = useQuery({
-    queryKey: ['students'],
-
+    queryKey: ['students', page],
     queryFn: () => {
-      const controller = new AbortController()
-      setTimeout(() => {
-        controller.abort()
-      }, 5000)
-      return getStudents(page, LIMIT, controller.signal)
+      return getStudents(page, LIMIT)
     },
+    // *gcTime
+    gcTime: 5 * 60 * 1000, // default gcTime
+
+    //* staleTime
+    staleTime: 3 * 1000 // 3 minutes
+
     // * v4
     // keepPreviousData: true,
 
     //* v5
-    placeholderData: keepPreviousData,
-    retry: 0
+    // placeholderData: keepPreviousData,
+    // retry: 0
   })
 
   const deleteStudentMutation = useMutation({
@@ -94,6 +97,18 @@ export default function Students() {
   return (
     <div>
       <h1 className='text-lg'>Students</h1>
+      {/* <div>
+        {' '}
+        <button className='mt-6 rounded bg-blue-500 px-5 py-2 text-white' onClick={() => setPagess(2)}>
+          Click change page to 2
+        </button>
+      </div>
+      <div>
+        {' '}
+        <button className='mt-6 rounded bg-blue-500 px-5 py-2 text-white' onClick={() => setPagess(4)}>
+          Click change page to 4
+        </button>
+      </div> */}
       <div>
         <button className='mt-6 rounded bg-blue-500 px-5 py-2 text-white' onClick={() => fetchStudent(10)}>
           Click 10s
